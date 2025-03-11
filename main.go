@@ -5,10 +5,48 @@ import (
 
 	"cappuchinodb.com/main/app/data/models"
 	"cappuchinodb.com/main/app/data/repositories"
+
+	"github.com/gofiber/fiber/v2"
+	"log"
+	"os"
 )
 
 func main() {
 
+	app := fiber.New()
+
+	app.Get("/", indexHandler) // Add this
+	app.Post("/", postHandler) // Add this 
+	app.Put("/update", putHandler) // Add this 
+	app.Delete("/delete", deleteHandler) // Add this
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Fatalln(app.Listen(fmt.Sprintf(":%v", port)))
+
+	//testDatabase()
+
+}
+
+func indexHandler(c *fiber.Ctx) error {
+	return c.SendString("Get")
+}
+
+ func postHandler(c *fiber.Ctx) error {
+	return c.SendString("Post")
+}
+
+ func putHandler(c *fiber.Ctx) error {
+	return c.SendString("Put")
+}
+
+ func deleteHandler(c *fiber.Ctx) error {
+	return c.SendString("Delete")
+}
+
+func testDatabase(){
 	sugarURL := "https://5.imimg.com/data5/AT/TN/MY-2/granulated-white-sugar-500x500.jpg"
 	product := models.Product{
 		Name:     "sugar",
@@ -53,5 +91,4 @@ func main() {
 	} else {
 		fmt.Println(recipeCrErr)
 	}
-
 }

@@ -1,14 +1,14 @@
-package repositories
+package handlers
 
 import (
 	"context"
 
-	"cappuchinodb.com/main/app/data"
-	"cappuchinodb.com/main/app/data/models"
+	"cappuchinodb.com/main/app/database"
+	"cappuchinodb.com/main/app/pkg/models"
 )
 
 func CreateProduct(product models.Product) error {
-	db, err := data.ConnectDB()
+	db, err := database.ConnectDB()
 	if err != nil {
 		return err
 	}
@@ -26,16 +26,16 @@ func CreateProduct(product models.Product) error {
 
 // Get product by name
 func GetProduct(name string) (models.Product, error) {
-	db, err := data.ConnectDB()
+	db, err := database.ConnectDB()
 	if err != nil {
 		return models.Product{}, err
 	}
 	defer db.Close(context.Background())
 
 	var product models.Product
-	row := db.QueryRow(context.Background(), 
-	"SELECT id, name, calories, unit_name, image_src FROM products WHERE name=$1", 
-	name)
+	row := db.QueryRow(context.Background(),
+		"SELECT id, name, calories, unit_name, image_src FROM products WHERE name=$1",
+		name)
 	if err := row.Scan(&product.ID, &product.Name, &product.Calories, &product.UnitName, &product.ImageSrc); err != nil {
 		return models.Product{}, err
 	}
@@ -44,7 +44,7 @@ func GetProduct(name string) (models.Product, error) {
 
 // Update recipe's ingredients by recipe's ID
 func UpdateProduct(productID int, product models.Product) error {
-	db, err := data.ConnectDB()
+	db, err := database.ConnectDB()
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func UpdateProduct(productID int, product models.Product) error {
 }
 
 func DeleteProduct(productID int) error {
-	db, err := data.ConnectDB()
+	db, err := database.ConnectDB()
 	if err != nil {
 		return err
 	}

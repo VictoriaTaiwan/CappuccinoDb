@@ -1,15 +1,15 @@
-package repositories
+package handlers
 
 import (
 	"context"
 	"encoding/json"
 
-	"cappuchinodb.com/main/app/data"
-	"cappuchinodb.com/main/app/data/models"
+	"cappuchinodb.com/main/app/database"
+	"cappuchinodb.com/main/app/pkg/models"
 )
 
 func CreateRecipe(recipe models.Recipe) error {
-	db, err := data.ConnectDB()
+	db, err := database.ConnectDB()
 	if err != nil {
 		return err
 	}
@@ -19,8 +19,8 @@ func CreateRecipe(recipe models.Recipe) error {
 	jsonIngredients, _ := json.Marshal(recipe.Ingredients)
 
 	_, err = db.Exec(context.Background(),
-	"INSERT INTO recipes (name, calories, unit_name, image_src, ingredients, instructions) VALUES ($1, $2, $3, $4, $5, $6)",
-	info.Name, info.Calories, info.UnitName, info.ImageSrc, jsonIngredients, recipe.Instructions)
+		"INSERT INTO recipes (name, calories, unit_name, image_src, ingredients, instructions) VALUES ($1, $2, $3, $4, $5, $6)",
+		info.Name, info.Calories, info.UnitName, info.ImageSrc, jsonIngredients, recipe.Instructions)
 	if err != nil {
 		return err
 	}
@@ -30,15 +30,15 @@ func CreateRecipe(recipe models.Recipe) error {
 
 // Find all recipes by calories
 func FilterRecipesByCalories(calories float64) ([]models.Recipe, error) {
-	db, err := data.ConnectDB()
+	db, err := database.ConnectDB()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close(context.Background())
 
-	rows, _ := db.Query(context.Background(), 
-	"SELECT id, name, calories, unit_name, image_src, ingredients, instructions FROM recipes WHERE calories=$1", 
-	calories)
+	rows, _ := db.Query(context.Background(),
+		"SELECT id, name, calories, unit_name, image_src, ingredients, instructions FROM recipes WHERE calories=$1",
+		calories)
 
 	var recipes []models.Recipe
 	var info models.Product
@@ -56,7 +56,7 @@ func FilterRecipesByCalories(calories float64) ([]models.Recipe, error) {
 
 // Update recipe's ingredients by recipe's ID
 func UpdateRecipe(recipeID int, recipe models.Recipe) error {
-	db, err := data.ConnectDB()
+	db, err := database.ConnectDB()
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func UpdateRecipe(recipeID int, recipe models.Recipe) error {
 }
 
 func DeleteRecipe(recipeID int) error {
-	db, err := data.ConnectDB()
+	db, err := database.ConnectDB()
 	if err != nil {
 		return err
 	}

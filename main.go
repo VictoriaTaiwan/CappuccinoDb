@@ -3,50 +3,25 @@ package main
 import (
 	"fmt"
 
-	"cappuchinodb.com/main/app/data/models"
-	"cappuchinodb.com/main/app/data/repositories"
+	"cappuchinodb.com/main/app/router"
+	"cappuchinodb.com/main/app/pkg/handlers"
+	"cappuchinodb.com/main/app/pkg/models"
 
 	"github.com/gofiber/fiber/v2"
-	"log"
-	"os"
 )
 
 func main() {
 
 	app := fiber.New()
 
-	app.Get("/", indexHandler) // Add this
-	app.Post("/", postHandler) // Add this 
-	app.Put("/update", putHandler) // Add this 
-	app.Delete("/delete", deleteHandler) // Add this
+	router.SetupRoutes(app)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	log.Fatalln(app.Listen(fmt.Sprintf(":%v", port)))
+	app.Listen(":8080")
 
 	//testDatabase()
-
 }
 
-func indexHandler(c *fiber.Ctx) error {
-	return c.SendString("Get")
-}
-
- func postHandler(c *fiber.Ctx) error {
-	return c.SendString("Post")
-}
-
- func putHandler(c *fiber.Ctx) error {
-	return c.SendString("Put")
-}
-
- func deleteHandler(c *fiber.Ctx) error {
-	return c.SendString("Delete")
-}
-
-func testDatabase(){
+func testDatabase() {
 	sugarURL := "https://5.imimg.com/data5/AT/TN/MY-2/granulated-white-sugar-500x500.jpg"
 	product := models.Product{
 		Name:     "sugar",
@@ -54,14 +29,14 @@ func testDatabase(){
 		UnitName: "table spoons",
 		ImageSrc: sugarURL,
 	}
-	productCrErr := repositories.CreateProduct(product)
+	productCrErr := handlers.CreateProduct(product)
 	if productCrErr == nil {
 		fmt.Println("Sugar product was added to the database")
 	} else {
 		fmt.Println(productCrErr)
 	}
 
-	searchedProduct, searchedProductErr := repositories.GetProduct("sugar")
+	searchedProduct, searchedProductErr := handlers.GetProduct("sugar")
 	if searchedProductErr == nil {
 		fmt.Println("Sugar is counted by " + searchedProduct.UnitName)
 	} else {
@@ -85,7 +60,7 @@ func testDatabase(){
 		Instructions: instructions,
 	}
 
-	recipeCrErr := repositories.CreateRecipe(pavlovaRecipe)
+	recipeCrErr := handlers.CreateRecipe(pavlovaRecipe)
 	if recipeCrErr == nil {
 		fmt.Println("Pavlova cake was added to the database")
 	} else {

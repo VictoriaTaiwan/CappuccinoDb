@@ -1,27 +1,23 @@
 package main
 
 import (
-	"fmt"
-
-	"cappuchinodb.com/main/app/router"
-	"cappuchinodb.com/main/app/pkg/handlers"
-	"cappuchinodb.com/main/app/pkg/models"
+	"cappuchinodb.com/main/app/database"
+	"cappuchinodb.com/main/app/pkg/router"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-
 	app := fiber.New()
+
+	database.ConnectDB()
 
 	router.SetupRoutes(app)
 
 	app.Listen(":8080")
-
-	//testDatabase()
 }
 
-func testDatabase() {
+/*func testDatabase() {
 	sugarURL := "https://5.imimg.com/data5/AT/TN/MY-2/granulated-white-sugar-500x500.jpg"
 	product := models.Product{
 		Name:     "sugar",
@@ -66,4 +62,4 @@ func testDatabase() {
 	} else {
 		fmt.Println(recipeCrErr)
 	}
-}
+}*/

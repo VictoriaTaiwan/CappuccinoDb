@@ -1,76 +1,77 @@
 package handlers
 
 import (
-	"context"
+	"strconv"
 
 	"cappuchinodb.com/main/app/database"
 	"cappuchinodb.com/main/app/pkg/models"
+	"github.com/gofiber/fiber/v2"
 )
 
-func CreateProduct(product models.Product) error {
-	db, err := database.ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close(context.Background())
+func SetupProductsRoutes(router fiber.Router) {
+	products:= router.Group("/products")
 
-	_, err = db.Exec(context.Background(),
-		"INSERT INTO products (name, calories, unit_name, image_src) VALUES ($1, $2, $3, $4)",
-		product.Name, product.Calories, product.UnitName, product.ImageSrc)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	products.Get("/", GetProductsHandler)
+	products.Post("/post", PostProductHandler)
+	products.Put("/update", UpdateProductHandler)
+	products.Delete("/delete", DeleteProductHandler)
 }
 
-// Get product by name
-func GetProduct(name string) (models.Product, error) {
-	db, err := database.ConnectDB()
-	if err != nil {
-		return models.Product{}, err
-	}
-	defer db.Close(context.Background())
+func GetProductsHandler(c *fiber.Ctx) error {
+	name := c.Query("name")
 
+	product, err:= database.GetProduct(name)
+	if err!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "No products found", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Product found", "data": product})
+}
+
+func PostProductHandler(c *fiber.Ctx) error {
 	var product models.Product
-	row := db.QueryRow(context.Background(),
-		"SELECT id, name, calories, unit_name, image_src FROM products WHERE name=$1",
-		name)
-	if err := row.Scan(&product.ID, &product.Name, &product.Calories, &product.UnitName, &product.ImageSrc); err != nil {
-		return models.Product{}, err
+	
+	err := c.BodyParser(&product)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Error decoding JSON", "data": nil})
 	}
-	return product, nil
+
+	err = database.CreateProduct(product)
+	if err!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Product creation error", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Product created", "data": product})
 }
 
-// Update recipe's ingredients by recipe's ID
-func UpdateProduct(productID int, product models.Product) error {
-	db, err := database.ConnectDB()
+func UpdateProductHandler(c *fiber.Ctx) error {
+	var product models.Product
+	
+	err := c.BodyParser(&product)
 	if err != nil {
-		return err
-	}
-	defer db.Close(context.Background())
-
-	_, err = db.Exec(context.Background(),
-		"UPDATE products SET name=$1, calories=$2, unit_name=$3, image_src=$4 WHERE id=$5",
-		product.Name, product.Calories, product.UnitName, product.ImageSrc, productID)
-	if err != nil {
-		return err
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Error decoding JSON", "data": nil})
 	}
 
-	return nil
+	err = database.UpdateProduct(product.ID, product)
+	if err!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Product update error", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Product updated", "data": product})
 }
 
-func DeleteProduct(productID int) error {
-	db, err := database.ConnectDB()
-	if err != nil {
-		return err
+func DeleteProductHandler(c *fiber.Ctx) error {
+	id := c.Query("id")
+	
+	idNum, convErr:=strconv.Atoi(id)
+	if convErr!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Id is invalid", "data": nil})
 	}
-	defer db.Close(context.Background())
-
-	_, err = db.Exec(context.Background(), "DELETE FROM products WHERE id=$1", productID)
-	if err != nil {
-		return err
+	
+	dbErr:= database.DeleteProduct(idNum)
+	if dbErr!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Product deletion error", "data": nil})
 	}
 
-	return nil
+	return c.JSON(fiber.Map{"status": "success", "message": "Product deleted", "data": id})
 }

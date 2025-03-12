@@ -8,6 +8,8 @@ import (
 	"cappuchinodb.com/main/app/config"
 )
 
+var DB *pgx.Conn
+
 func ConnectDB() (*pgx.Conn, error) {
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/cappuchinodb",
@@ -16,9 +18,11 @@ func ConnectDB() (*pgx.Conn, error) {
 		config.Config("DB_HOST"),
 		config.Config("DB_PORT"),
 	)
-	conn, err := pgx.Connect(context.Background(), dsn)
+	
+	var err error
+	DB, err = pgx.Connect(context.Background(), dsn)
 	if err != nil {
 		return nil, err
 	}
-	return conn, nil
+	return DB, nil
 }

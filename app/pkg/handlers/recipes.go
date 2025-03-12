@@ -1,88 +1,83 @@
 package handlers
 
 import (
-	"context"
-	"encoding/json"
+	"strconv"
 
 	"cappuchinodb.com/main/app/database"
 	"cappuchinodb.com/main/app/pkg/models"
+	"github.com/gofiber/fiber/v2"
 )
 
-func CreateRecipe(recipe models.Recipe) error {
-	db, err := database.ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close(context.Background())
+func SetupRecipesRoutes(router fiber.Router) {
+	recipes := router.Group("/recipes")
 
-	info := recipe.Information
-	jsonIngredients, _ := json.Marshal(recipe.Ingredients)
-
-	_, err = db.Exec(context.Background(),
-		"INSERT INTO recipes (name, calories, unit_name, image_src, ingredients, instructions) VALUES ($1, $2, $3, $4, $5, $6)",
-		info.Name, info.Calories, info.UnitName, info.ImageSrc, jsonIngredients, recipe.Instructions)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	recipes.Get("/", GetRecipesHandler)
+	recipes.Post("/post", PostRecipeHandler)
+	recipes.Put("/update", PutRecipeHandler)
+	recipes.Delete("/delete", DeleteRecipeHandler)
 }
 
-// Find all recipes by calories
-func FilterRecipesByCalories(calories float64) ([]models.Recipe, error) {
-	db, err := database.ConnectDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close(context.Background())
+func GetRecipesHandler(c *fiber.Ctx) error {
+	calories := c.Query("calories")
+	caloriesNum, convErr := strconv.ParseFloat(calories, 64)
 
-	rows, _ := db.Query(context.Background(),
-		"SELECT id, name, calories, unit_name, image_src, ingredients, instructions FROM recipes WHERE calories=$1",
-		calories)
-
-	var recipes []models.Recipe
-	var info models.Product
-	for rows.Next() {
-		var recipe models.Recipe
-		recipe.Information = info
-		if err := rows.Scan(&info.ID, &info.Name, &info.Calories, &info.UnitName, &info.ImageSrc, &recipe.Ingredients, &recipe.Instructions); err != nil {
-			return nil, err
-		}
-		recipes = append(recipes, recipe)
+	if convErr!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Calories number is invalid", "data": nil})
 	}
 
-	return recipes, nil
+	recipes, dbErr:= database.FilterRecipesByCalories(caloriesNum)
+	if dbErr!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "No recipes found", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Recipes found", "data": recipes})
 }
 
-// Update recipe's ingredients by recipe's ID
-func UpdateRecipe(recipeID int, recipe models.Recipe) error {
-	db, err := database.ConnectDB()
+func PostRecipeHandler(c *fiber.Ctx) error {
+	var recipe models.Recipe
+	
+	err := c.BodyParser(&recipe)
 	if err != nil {
-		return err
-	}
-	defer db.Close(context.Background())
-
-	_, err = db.Exec(context.Background(),
-		"UPDATE recipes SET name=$1, instructions=$2 WHERE id=$3",
-		recipe.Information.Name, recipe.Instructions, recipeID)
-	if err != nil {
-		return err
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Error decoding JSON", "data": nil})
 	}
 
-	return nil
+	err = database.CreateRecipe(recipe)
+	if err!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Recipe creation error", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Recipe created", "data": recipe})
 }
 
-func DeleteRecipe(recipeID int) error {
-	db, err := database.ConnectDB()
+func PutRecipeHandler(c *fiber.Ctx) error {
+	var recipe models.Recipe
+	
+	err := c.BodyParser(&recipe)
 	if err != nil {
-		return err
-	}
-	defer db.Close(context.Background())
-
-	_, err = db.Exec(context.Background(), "DELETE FROM recipes WHERE id=$1", recipeID)
-	if err != nil {
-		return err
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Error decoding JSON", "data": nil})
 	}
 
-	return nil
+	err = database.UpdateRecipe(recipe.Information.ID, recipe)
+	if err!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Recipe update error", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Recipe updated", "data": recipe})
 }
+
+func DeleteRecipeHandler(c *fiber.Ctx) error {
+	id := c.Query("id")
+	
+	idNum, convErr:=strconv.Atoi(id)
+	if convErr!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Id is invalid", "data": nil})
+	}
+	
+	dbErr:= database.DeleteRecipe(idNum)
+	if dbErr!=nil{
+		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Recipe deletion error", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Recipe deleted", "data": id})
+}
+

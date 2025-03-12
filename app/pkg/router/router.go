@@ -3,13 +3,13 @@ package router
 import (
     "github.com/gofiber/fiber/v2"
     "github.com/gofiber/fiber/v2/middleware/logger"
-    "cappuchinodb.com/main/app/routes"
+    "cappuchinodb.com/main/app/pkg/handlers"
 )
 
 func SetupRoutes(app *fiber.App) {
     api := app.Group("/api", logger.New())
 
-    routes.SetupProductsRoutes(api)
-	routes.SetupRecipesRoutes(api)
+    handlers.SetupProductsRoutes(api)
+	handlers.SetupRecipesRoutes(api)
 }
 

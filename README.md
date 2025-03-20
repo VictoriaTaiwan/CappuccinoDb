@@ -16,13 +16,13 @@
 Example for POST request.
 
 ```
-	data := bytes.NewBufferString(`{"name":"sugar","calories":4,"unit_name":"grams","image_src":"https://example/sugar_image.png"}`)
-	req, err := http.NewRequest("PUT", "http://localhost:8080/api/products/post", data)
-	req.Header.Set("Content-Type", "application/json")
+data := bytes.NewBufferString(`{"name":"sugar","calories":4,"unit_name":"grams","image_src":"https://example/sugar_image.png"}`)
+req, err := http.NewRequest("PUT", "http://localhost:8080/api/products/post", data)
+req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
+client := &http.Client{}
+resp, err := client.Do(req)
+defer resp.Body.Close()
 ```
 
 ***
@@ -40,11 +40,10 @@ Example for POST request.
 Example for DELETE request.
 
 ```
-	url := "http://localhost:8080/api/products/delete?id=1"
+url := "http://localhost:8080/api/products/delete?id=1"
 
-	req, err := http.NewRequest("DELETE", url, nil) 
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
+req, err := http.NewRequest("DELETE", url, nil) 
+client := &http.Client{}
+resp, err := client.Do(req)
+defer resp.Body.Close()
 ```

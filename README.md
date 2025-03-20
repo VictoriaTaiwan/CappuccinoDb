@@ -11,7 +11,7 @@
 | POST   | /api/products/post      | Add a new ingredient to the database     |
 | PUT     | /api/products/update       | Update an existing ingredient (requires id)      |
 | GET     | /api/products/`{name}`       | Find an ingredient by name      |
-| DELETE     | /api/products/delete?{id}       | Delete an ingredient by id      |
+| DELETE     | /api/products/delete?`{id}`       | Delete an ingredient by id      |
 
 ***
 

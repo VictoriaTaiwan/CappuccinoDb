@@ -1,4 +1,4 @@
-☕ CappuchinoDB is a food database CRUD api, it contains ingredients (e.g., milk, sugar) and recipes for meals.
+☕ CappuchinoDB is a food database CRUD API, it contains ingredients (e.g., milk, sugar) and recipes for meals.
 
 📌 API Endpoints
 

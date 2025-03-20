@@ -11,7 +11,7 @@
 | POST   | /api/products/post      | Add a new ingredient to the database     |
 | PUT     | /api/products/update       | Update an existing ingredient (requires id)      |
 | GET     | /api/products/{name}       | Find an ingredient by name      |
-| DELETE     | /api/products/{id}       | Delete an ingredient by id      |
+| DELETE     | /api/products/delete?{id}       | Delete an ingredient by id      |
 
 ***
 
@@ -20,6 +20,6 @@
 | Method | Endpoint | Description |
 | :---         |     :---:      |          ---: |
 | POST   | /api/recipes/post     | Add a new recipe to the database     |
-| PUT     | git diff       | Update an existing recipe (requires id)      |
-| GET     | git diff       | Find recipes based on calorie count      |
-| DELETE     | git diff       | Delete a recipe by id      |
+| PUT     | /api/recipes/update       | Update an existing recipe (requires id)      |
+| GET     | /api/recipes/{calories}       | Find recipes based on calorie count      |
+| DELETE     | /api/recipes/delete?{id}       | Delete a recipe by id      |

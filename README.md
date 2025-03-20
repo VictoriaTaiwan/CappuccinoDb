@@ -13,7 +13,7 @@
 | GET     | /api/products/`name={name}`       | Find an ingredient by name      |
 | DELETE     | /api/products/delete?`id={id}`       | Delete an ingredient by id      |
 
-Example for POST request
+Example for POST request.
 
 ```
 	data := bytes.NewBufferString(`{"name":"sugar","calories":4,"unit_name":"grams","image_src":"https://example/sugar_image.png"}`)
@@ -37,7 +37,7 @@ Example for POST request
 | DELETE     | /api/recipes/delete?`id={id}`       | Delete a recipe by id      |
 
 
-Example for DELETE request
+Example for DELETE request.
 
 ```
 	url := "http://localhost:8080/api/products/delete?id=1"
